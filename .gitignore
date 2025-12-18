@@ -1,0 +1,71 @@
+# ==========================================
+# 1. OS and IDE Files
+# ==========================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ==========================================
+# 2. Environment Secrets (IMPORTANT)
+# ==========================================
+# Tuyệt đối không commit file .env chứa thông tin thật
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env.bak
+
+# Giữ lại file mẫu
+!.env.example
+
+# ==========================================
+# 3. Dependencies
+# ==========================================
+node_modules/
+jspm_packages/
+.npm
+.eslintcache
+
+# ==========================================
+# 4. Build and Distribution
+# ==========================================
+dist/
+build/
+out/
+.next/
+bin/
+obj/
+
+# ==========================================
+# 5. Infrastructure & Docker
+# ==========================================
+# Logs của Docker hoặc Nginx
+infra/nginx/logs/*
+!infra/nginx/logs/.gitkeep
+docker/volumes/
+*.log
+
+# ==========================================
+# 6. Database & Scripts
+# ==========================================
+# Không commit các bản backup database thực tế trong scripts/
+scripts/backups/*.sql
+scripts/data_dump/
+
+# ==========================================
+# 7. Design & Large Assets
+# ==========================================
+# Nếu file thiết kế quá nặng (>50MB), nên cân nhắc dùng Git LFS
+# design/branding/*.psd
+# design/branding/*.ai
+
+# ==========================================
+# 8. Testing & Coverage
+# ==========================================
+coverage/
+.nyc_output/
+*.lcov
