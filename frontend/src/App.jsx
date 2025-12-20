@@ -5,6 +5,8 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import PostItem from './pages/PostItem';
+import HybridView from './pages/HybridView';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -15,7 +17,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
@@ -27,6 +29,10 @@ function App() {
               <h1 className="text-center mt-20 text-2xl">Trang quản lý cá nhân (Dashboard)</h1>
             </ProtectedRoute>
           } />
+          
+          <Route path="/explore" element={<ProtectedRoute><HybridView /></ProtectedRoute>} />
+          <Route path="/post-item" element={<ProtectedRoute><PostItem /></ProtectedRoute>} />
+
           <Route path="/" element={<h1 className="text-center mt-20 text-4xl font-bold">Hệ thống Tìm kiếm Đồ thất lạc</h1>} />
         </Routes>
       </Router>

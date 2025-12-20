@@ -6,6 +6,7 @@ require('dotenv').config();
 // 1. Import các Routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const itemRoutes = require('./routes/itemRoutes');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.json()); // Rất quan trọng để đọc dữ liệu JSON t�
 // Khi đó: /register trong authRoutes sẽ trở thành /api/auth/register
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/items', itemRoutes)
 
 // Test Route (Health Check)
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));

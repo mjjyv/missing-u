@@ -11,8 +11,10 @@ export default function Navbar() {
         <Link to="/" className="hover:text-black">Trang chủ</Link>
         {user ? (
           <>
-            <span className="text-gray-700 font-medium italic">Chào, {user.email}</span>
-            <Link to="/profile" className="hover:text-primary transition font-medium">Hồ sơ</Link>
+            <span className="text-blue-500 font-medium italic">Chào, {user.email}</span>
+            <Link to="/profile" className="hover:text-gray-500 transition">Hồ sơ</Link>
+            <Link to="/post-item" className="hover:text-gray-500 transition">Đăng bài</Link>
+            <Link to="/explore" className="hover:text-gray-500 font-bold">Khám phá</Link>
             <button onClick={logout} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Đăng xuất</button>
           </>
         ) : (
