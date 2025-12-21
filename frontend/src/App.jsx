@@ -8,6 +8,8 @@ import Profile from './pages/Profile';
 import PostItem from './pages/PostItem';
 import HybridView from './pages/HybridView';
 import ProtectedRoute from './components/ProtectedRoute';
+import EditItem from './pages/EditItem';
+
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
               <Profile />
             </ProtectedRoute>
           } />
+          <Route path="/edit-item/:id" element={<EditItem />} />
           
           <Route path="/dashboard" element={
             <ProtectedRoute>
