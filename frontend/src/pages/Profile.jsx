@@ -104,7 +104,7 @@ export default function Profile() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2 rounded-lg text-sm font-bold ${activeTab === tab ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700'}`}
+            className={`flex-1 py-2 rounded-lg text-sm font-bold ${activeTab === tab ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}
           >
             {tab === 'All' ? 'Tất cả' : tab === 'Pending' ? 'Đang chờ' : 'Đã giải quyết'}
           </button>
@@ -123,7 +123,7 @@ export default function Profile() {
           ))
         ) : (
           <div className="text-center text-gray-500">
-            Không có bài đăng nào. <a href="/post-item" className="text-primary">Bắt đầu đăng tin ngay!</a>
+            Không có bài đăng nào. <a href="/post-item" className="text-red-500">Bắt đầu đăng tin ngay!</a>
           </div>
         )}
       </div>

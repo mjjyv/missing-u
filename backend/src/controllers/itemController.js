@@ -317,3 +317,44 @@ exports.getItemById = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+
+
+// backend/controllers/itemController.js
+
+
+
+// ... (các hàm cũ createItem, getAllItems...)
+
+// [MỚI] Hàm lấy danh sách tin trùng khớp cho một Item ID cụ thể
+exports.getItemMatches = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Lấy thông tin chi tiết của tin gốc từ DB
+    const itemQuery = `
+      SELECT * FROM items WHERE id = $1 AND status != 'CLOSED'
+    `;
+    const itemResult = await pool.query(itemQuery, [id]);
+
+    if (itemResult.rows.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy bài đăng hoặc bài đã đóng." });
+    }
+
+    const targetItem = itemResult.rows[0];
+
+    // 2. Gọi Matching Engine để tìm các tin khớp với tin gốc này
+    // Lưu ý: findMatches thường trả về danh sách kèm điểm số (score)
+    const matches = await matchingEngine.findMatches(targetItem);
+
+    // 3. Trả về kết quả
+    res.json({ 
+      status: 'success', 
+      data: matches 
+    });
+
+  } catch (err) {
+    console.error("Get Matches Error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};

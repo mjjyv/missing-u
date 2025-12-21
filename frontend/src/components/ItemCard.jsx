@@ -4,81 +4,97 @@ import { useNavigate } from 'react-router-dom';
 
 export default function ItemCard({ 
   item, 
-  onClick,          // Hàm mở modal chi tiết
-  isHovered,        
-  onHover           
+  onClick, 
+  isHovered, 
+  onHover 
 }) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const dateStr = new Date(item.created_at).toLocaleDateString('vi-VN');
+  const dateStr = new Date(item.created_at).toLocaleDateString('vi-VN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
 
-  // ⚠️ Ép kiểu an toàn để tránh lỗi string vs number
   const isOwner = user && Number(user.id) === Number(item.user_id);
+  const isCurrentlyHovered = isHovered === item.id;
 
   const handleEdit = (e) => {
     e.stopPropagation();
     navigate(`/edit-item/${item.id}`);
   };
 
-  const isCurrentlyHovered = isHovered === item.id;
-
   return (
     <div
       id={`item-${item.id}`}
       className={`
-        relative flex p-4 mb-4 bg-white rounded-xl shadow-sm cursor-pointer 
-        transition-all duration-300 border-l-4
-        ${item.type === 'LOST' ? 'border-red-500' : 'border-green-500'}
+        relative bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer
+        transition-all duration-300 border border-gray-100 mb-2.5
+        ${item.type === 'LOST' ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-green-500'}
         ${isCurrentlyHovered 
-          ? 'bg-blue-50 ring-2 ring-blue-300 shadow-lg scale-[1.02]' 
-          : 'hover:shadow-md hover:scale-[1.01]'
+          ? 'shadow-xl ring-2 ring-blue-200 ring-opacity-50 scale-[1.02] translate-y-1' 
+          : 'hover:shadow-lg hover:scale-[1.01] hover:translate-y-0.5'
         }
       `}
       onMouseEnter={() => onHover && onHover(item.id)}
       onMouseLeave={() => onHover && onHover(null)}
       onClick={() => onClick && onClick(item)}
     >
-      {/* Thumbnail */}
-      {item.images?.[0] && (
-        <img
-          src={item.images[0]}
-          alt="Thumbnail"
-          className="w-20 h-20 object-cover rounded-lg mr-4 flex-shrink-0"
-        />
-      )}
+      <div className="flex p-5">
+        {/* Thumbnail */}
+        {item.images?.[0] ? (
+          <div className="shrink-0 mr-4">
+            <img
+              src={item.images[0]}
+              alt="Thumbnail"
+              className="w-24 h-24 object-cover rounded-xl shadow-md"
+            />
+          </div>
+        ) : (
+          <div className="shrink-0 mr-4 w-24 h-24 bg-gray-100 rounded-xl flex items-center justify-center">
+            <span className="text-gray-400 text-3xl">📦</span>
+          </div>
+        )}
 
-      {/* Nội dung */}
-      <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-gray-800 text-lg truncate">{item.title}</h3>
-        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-          {item.description || 'Không có mô tả'}
-        </p>
+        {/* Nội dung */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 leading-tight mb-2">
+            {item.title}
+          </h3>
 
-        <div className="flex flex-wrap gap-2 mt-3">
-          <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${
-            item.type === 'LOST' ? 'bg-red-500' : 'bg-green-500'
-          }`}>
-            {item.type === 'LOST' ? 'Báo mất' : 'Nhặt được'}
-          </span>
-          <span className="px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-            {dateStr}
-          </span>
+          <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+            {item.description || 'Không có mô tả'}
+          </p>
+
+          <div className="flex flex-wrap mb-1 items-center gap-3 text-xs">
+            <span className={`px-3 py-1.5 rounded-full font-medium text-white ${
+              item.type === 'LOST' ? 'bg-red-500' : 'bg-green-500'
+            }`}>
+              {item.type === 'LOST' ? 'Báo mất' : 'Nhặt được'}
+            </span>
+            
+          </div>
+
+          <div className='flex flex-wrap items-center gap-3 text-xs'>
+            <span className="text-gray-500 flex items-center gap-1">
+              📅 {dateStr}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Nút hành động */}
-      <div className="absolute bottom-4 right-4 flex gap-2">
+      {/* Nút hành động - nổi ở góc phải dưới */}
+      <div className="absolute bottom-4 right-4">
         {isOwner ? (
           <button
             onClick={handleEdit}
-            className="px-4 py-2 bg-yellow-100 text-yellow-800 text-sm font-bold rounded-lg 
-                       hover:bg-yellow-200 hover:shadow transition flex items-center gap-1"
+            className="px-4 py-2 bg-linear-to-r from-amber-500 to-orange-500 text-white font-medium text-sm rounded-full shadow-lg hover:shadow-xl transition flex items-center gap-1.5"
           >
-            ✏️ Sửa
+            ✏️ Sửa bài
           </button>
         ) : (
-          <div className="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg">
+          <div className="px-4 py-2 bg-gray-100 text-gray-600 font-medium text-sm rounded-full">
             Xem chi tiết →
           </div>
         )}

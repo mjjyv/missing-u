@@ -75,7 +75,7 @@ export default function FilterSidebar({ filters, setFilters, onApply }) {
             <button
               key={c}
               onClick={() => handleChange('color', filters.color === c ? '' : c)}
-              className={`w-6 h-6 rounded-full border-2 ${filters.color === c ? 'border-primary ring-2 ring-blue-200' : 'border-gray-200'}`}
+              className={`w-6 h-6 rounded-full border-2 ${filters.color === c ? 'border-gray-500 ring-2 ring-blue-200' : 'border-gray-200'}`}
               style={{ backgroundColor: c }}
               title={c}
             />
@@ -108,7 +108,7 @@ export default function FilterSidebar({ filters, setFilters, onApply }) {
 
       <button 
         onClick={onApply}
-        className="w-full py-2 bg-primary text-white rounded-lg font-bold shadow hover:bg-red-600 transition"
+        className="w-full py-2 bg-gray-500 text-white rounded-lg font-bold shadow hover:bg-red-600 transition"
       >
         Áp dụng bộ lọc
       </button>

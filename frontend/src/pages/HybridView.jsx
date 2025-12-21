@@ -7,7 +7,7 @@ import FilterSidebar from '../components/FilterSidebar';
 import { lostIcon, foundIcon, highlightIcon } from '../utils/mapIcons';
 import 'leaflet/dist/leaflet.css';
 
-// Component flyTo khi chọn một item
+// Component flyTo khi chọn item
 function MapFlyTo({ position }) {
   const map = useMap();
   useEffect(() => {
@@ -41,7 +41,6 @@ export default function HybridView() {
   const [detailItem, setDetailItem] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
 
-  // Bộ lọc mở rộng
   const [filters, setFilters] = useState({
     type: '',
     category_id: '',
@@ -52,19 +51,16 @@ export default function HybridView() {
     status: 'PENDING',
   });
 
-  // Ref để debounce fetch khi kéo bản đồ
+  // Trạng thái mở/đóng drawer lọc
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   const debounceRef = useRef(null);
 
-  // Hàm fetch dữ liệu (bounds + filters)
   const fetchItems = useCallback(async (currentBounds, currentFilters) => {
     if (!currentBounds) return;
 
     try {
-      const params = {
-        ...currentBounds,
-        ...currentFilters,
-      };
-
+      const params = { ...currentBounds, ...currentFilters };
       const res = await axiosClient.get('/items/spatial', { params });
       setItems(res.data.data || []);
     } catch (err) {
@@ -72,54 +68,44 @@ export default function HybridView() {
     }
   }, []);
 
-  // Xử lý khi bounds thay đổi (di chuyển bản đồ)
   const handleBoundsChange = (bounds) => {
     setMapBounds(bounds);
 
-    // Clear timeout cũ
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    // Debounce 500ms trước khi gọi API
     debounceRef.current = setTimeout(() => {
       fetchItems(bounds, filters);
     }, 500);
   };
 
-  // Khi người dùng áp dụng bộ lọc từ sidebar
   const handleApplyFilter = () => {
     if (mapBounds) {
       fetchItems(mapBounds, filters);
     }
+    // Đóng drawer sau khi áp dụng (UX tốt trên mọi thiết bị)
+    setIsFilterOpen(false);
   };
 
-  // Khi click vào item (card hoặc marker)
   const handleItemSelect = (item) => {
     const [lng, lat] = item.location.coordinates;
     setSelectedLocation([lat, lng]);
     setHoveredId(item.id);
     setDetailItem(item);
 
-    // Scroll card vào giữa danh sách
     const element = document.getElementById(`item-${item.id}`);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
-  // Refresh danh sách (dùng sau khi xóa/sửa bài)
   const refreshData = () => {
-    if (mapBounds) {
-      fetchItems(mapBounds, filters);
-    }
+    if (mapBounds) fetchItems(mapBounds, filters);
   };
 
-  // === GIẢI PHÁP CHÍNH: FETCH LẦN ĐẦU KHI MOUNT ===
+  // Fetch lần đầu khi mount (bounds mặc định quanh Hà Nội)
   useEffect(() => {
-    // Tạo bounds mặc định quanh trung tâm Hà Nội (zoom ~13)
     const defaultCenter = { lat: 21.0285, lng: 105.8521 };
-    const delta = 0.05; // ~5-6km mỗi bên
+    const delta = 0.05;
 
     const initialBounds = {
       minLat: defaultCenter.lat - delta,
@@ -130,9 +116,9 @@ export default function HybridView() {
 
     setMapBounds(initialBounds);
     fetchItems(initialBounds, filters);
-  }, [fetchItems]); // Chỉ chạy 1 lần khi mount
+  }, [fetchItems]);
 
-  // Cleanup
+  // Cleanup debounce
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -140,7 +126,7 @@ export default function HybridView() {
   }, []);
 
   return (
-    <div className="flex h-[calc(100vh-64px)] relative">
+    <div className="relative h-[calc(100vh-64px)] flex flex-col lg:flex-row">
       {/* Modal chi tiết */}
       <ItemDetailModal
         item={detailItem}
@@ -148,20 +134,46 @@ export default function HybridView() {
         onUpdateList={refreshData}
       />
 
-      {/* SIDEBAR BỘ LỌC - Chỉ hiện trên màn lớn (lg+) */}
-      <div className="hidden lg:block w-64 h-full overflow-y-auto bg-white border-r shadow-md z-30">
-        <FilterSidebar
-          filters={filters}
-          setFilters={setFilters}
-          onApply={handleApplyFilter}
+      {/* Overlay tối khi drawer mở (chủ yếu cho mobile) */}
+      {isFilterOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsFilterOpen(false)}
         />
-      </div>
+      )}
+
+      {/* Drawer lọc - trượt từ trái */}
+      <div
+        className={`fixed top-16 left-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto
+          ${isFilterOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+      >
+       
+
+          <FilterSidebar
+            filters={filters}
+            setFilters={setFilters}
+            onApply={handleApplyFilter}
+          />
+        </div>
+
+      {/* NÚT FLOATING MỞ DRAWER - HIỆN LUÔN TRÊN MỌI THIẾT BỊ */}
+      <button
+        onClick={() => setIsFilterOpen(!isFilterOpen)}
+        className="fixed bottom-6 left-6 z-50
+                   w-14 h-14 bg-gray-500 text-white rounded-full shadow-2xl
+                   flex items-center justify-center text-2xl font-bold
+                   hover:bg-red-600 transition transform active:scale-95
+                   ring-4 ring-white"
+      >
+        {isFilterOpen ? '✕' : '⚡'}
+      </button>
 
       {/* DANH SÁCH KẾT QUẢ */}
-      <div className="w-full lg:w-1/3 xl:w-1/4 h-full overflow-y-auto bg-gray-50 p-4 border-r z-20">
+      <div className="w-full lg:w-2/5 xl:w-1/4 h-1/2 lg:h-full overflow-y-auto bg-gray-50 p-4 border-b lg:border-b-0 lg:border-r z-20">
         <div className="mb-4 flex justify-between items-center">
           <h2 className="text-lg font-bold text-gray-800">
-            Kết quả tìm kiếm ({items.length})
+            Kết quả ({items.length})
           </h2>
         </div>
 
@@ -177,35 +189,20 @@ export default function HybridView() {
           ))
         ) : (
           <div className="text-center mt-20 text-gray-400">
-            <p className="text-sm">
-              Không tìm thấy kết quả nào trong khu vực này.
-            </p>
-            <p className="text-xs mt-2">
-              Hãy thử di chuyển bản đồ hoặc thay đổi bộ lọc.
-            </p>
+            <p className="text-sm">Đang tải dữ liệu khu vực...</p>
+            <p className="text-xs mt-2">Di chuyển bản đồ để xem thêm</p>
           </div>
         )}
       </div>
 
-      {/* BẢN ĐỒ - Chỉ hiện trên màn lớn */}
-      <div className="hidden lg:block flex-1 h-full relative z-10">
+      {/* BẢN ĐỒ */}
+      <div className="flex-1 h-1/2 lg:h-full relative z-10">
         <MapContainer
-          center={[21.0285, 105.8521]} // Trung tâm Hà Nội
+          center={[21.0285, 105.8521]}
           zoom={13}
           className="h-full w-full"
-          // whenReady={(mapInstance) => {
-          //   const map = mapInstance.target;
-          //   const bounds = map.getBounds();
-          //   handleBoundsChange({
-          //     minLat: bounds.getSouth(),
-          //     maxLat: bounds.getNorth(),
-          //     minLng: bounds.getWest(),
-          //     maxLng: bounds.getEast(),
-          //   });
-          // }}
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
           <MapFlyTo position={selectedLocation} />
           <MapEvents onBoundsChange={handleBoundsChange} />
 
@@ -226,11 +223,7 @@ export default function HybridView() {
               >
                 <Popup>
                   <div className="text-center py-1 px-2 min-w-32">
-                    <p
-                      className={`font-bold text-sm ${
-                        item.type === 'LOST' ? 'text-red-600' : 'text-green-600'
-                      }`}
-                    >
+                    <p className={`font-bold text-sm ${item.type === 'LOST' ? 'text-red-600' : 'text-green-600'}`}>
                       {item.title}
                     </p>
                     <button

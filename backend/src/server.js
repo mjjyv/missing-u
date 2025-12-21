@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const itemRoutes = require('./routes/itemRoutes');
+const claimRoutes = require('./routes/claimRoutes')
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(express.json()); // Rất quan trọng để đọc dữ liệu JSON t�
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes)
+app.use('/api/claims', claimRoutes)
 
 // Test Route (Health Check)
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));

@@ -11,7 +11,7 @@ router.post('/', protect, uploadCloud.array('images', 5), itemController.createI
 router.get('/', itemController.getAllItems);
 router.get('/categories', require('../controllers/categoryController').getCategories);
 router.get('/spatial', itemController.getItemsInBounds);
-
+router.get('/:id/matches', itemController.getItemMatches);
 
 // Route mới: Lấy bài đăng của tôi
 router.get('/my-posts', protect, itemController.getMyPosts);
