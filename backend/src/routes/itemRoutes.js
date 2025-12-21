@@ -8,5 +8,10 @@ const uploadCloud = require('../config/cloudinary');
 router.post('/', protect, uploadCloud.array('images', 5), itemController.createItem);
 router.get('/', itemController.getAllItems);
 router.get('/categories', require('../controllers/categoryController').getCategories);
+router.get('/spatial', itemController.getItemsInBounds);
+
+// Thêm 2 dòng này
+router.delete('/:id', protect, itemController.deleteItem);
+router.put('/:id', protect, itemController.updateItem);
 
 module.exports = router;

@@ -4,6 +4,8 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 
+import MatchModal from '../components/MatchModal';
+
 // Component chọn màu sắc trực quan (Thay vì nhập text) 
 const ColorPicker = ({ value, onChange }) => {
   const colors = ['#000000', '#FFFFFF', '#808080', '#FF0000', '#0000FF', '#008000', '#FFFF00', '#A52A2A', '#FFC0CB', '#800080'];
@@ -54,6 +56,10 @@ export default function PostItem() {
 
   const [selectedImages, setSelectedImages] = useState([]); // Lưu file để upload
   const [previews, setPreviews] = useState([]); // Lưu URL tạm để hiển thị giao diện
+
+  // Thêm state vào PostItem.jsx
+  const [matchResults, setMatchResults] = useState([]);
+  const [showMatchModal, setShowMatchModal] = useState(false);
 
   const handleImageChange = (e) => {
       const files = Array.from(e.target.files);
@@ -137,11 +143,15 @@ export default function PostItem() {
     });
 
     try {
-        await axiosClient.post('/items', formDataPayload, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        alert('Đăng tin thành công!');
-        navigate('/explore');
+        const res = await axiosClient.post('/items', formDataPayload);
+        
+        if (res.data.matches && res.data.matches.length > 0) {
+            setMatchResults(res.data.matches);
+            setShowMatchModal(true); // Hiện Modal nếu có tin khớp
+        } else {
+            alert('Đăng tin thành công! Hiện chưa có tin nào trùng khớp.');
+            navigate('/explore');
+        }
     } catch (err) {
         console.error("Lỗi gửi tin:", err.response?.data);
         alert('Lỗi: ' + (err.response?.data?.message || "Không thể tải ảnh"));
@@ -151,7 +161,7 @@ export default function PostItem() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-xl rounded-2xl mt-8 mb-20">
-      <h1 className="text-3xl font-bold text-primary mb-2 text-center">Đăng Tin Mới</h1>
+      <h1 className="text-3xl font-bold text-gray-500 mb-2 text-center">Đăng Tin Mới</h1>
       <p className="text-gray-500 text-center mb-8">Hãy cung cấp chi tiết để hệ thống tìm kiếm chính xác nhất.</p>
       
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -159,7 +169,7 @@ export default function PostItem() {
         {/* === PHẦN 1: THÔNG TIN CHUNG (GLOBAL FIELDS) === */}
         <section className="bg-gray-50 p-6 rounded-xl border border-gray-200">
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <span className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">1</span>
+            <span className="bg-gray-500 text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">1</span>
             Thông tin cơ bản
           </h2>
           
@@ -167,7 +177,7 @@ export default function PostItem() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Loại tin</label>
               <select 
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gray-500 outline-none bg-white"
                 value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}
               >
                 <option value="LOST">🔴 Báo Mất Đồ</option>
@@ -179,7 +189,7 @@ export default function PostItem() {
               <label className="block text-sm font-semibold text-gray-700 mb-1">Thời gian</label>
               <input 
                 type="datetime-local"
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
                 value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
                 required
               />
@@ -189,7 +199,7 @@ export default function PostItem() {
               <label className="block text-sm font-semibold text-gray-700 mb-1">Tiêu đề tin</label>
               <input 
                 type="text" placeholder="Ví dụ: Mất ví da màu nâu tại Quận 1..." 
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
                 value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
                 required
               />
@@ -200,7 +210,7 @@ export default function PostItem() {
         {/* === PHẦN 2: DANH MỤC & THUỘC TÍNH (CATEGORY SPECIFIC) ===  */}
         <section className="bg-gray-50 p-6 rounded-xl border border-gray-200">
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-             <span className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">2</span>
+             <span className="bg-gray-500 text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">2</span>
              Chi tiết vật phẩm
           </h2>
 
@@ -230,8 +240,8 @@ export default function PostItem() {
 
           {/* Render Form Động dựa trên Schema 53] */}
           {dynamicSchema.length > 0 && (
-            <div className="p-4 bg-white rounded-lg border border-primary/20 shadow-sm animate-fade-in-down">
-              <h3 className="font-bold text-primary mb-4 uppercase text-sm tracking-wide">Đặc điểm nhận dạng</h3>
+            <div className="p-4 bg-white rounded-lg border border-gray-500/20 shadow-sm animate-fade-in-down">
+              <h3 className="font-bold text-gray-500 mb-4 uppercase text-sm tracking-wide">Đặc điểm nhận dạng</h3>
               <div className="grid md:grid-cols-2 gap-6">
                 {dynamicSchema.map((field, idx) => (
                   <div key={idx} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
@@ -256,7 +266,7 @@ export default function PostItem() {
                       <input 
                         type={field.type === 'number' ? 'number' : 'text'} 
                         placeholder={field.hidden ? 'Thông tin này sẽ bị ẩn với người xem công khai' : `Nhập ${field.label}...`}
-                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gray-500 outline-none"
                         onChange={(e) => handleDynamicChange(field.key, e.target.value)}
                       />
                     )}
@@ -269,7 +279,7 @@ export default function PostItem() {
 
         <section className="bg-gray-50 p-6 rounded-xl border border-gray-200">
     <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-        <span className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">4</span>
+        <span className="bg-gray-500 text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">4</span>
         Hình ảnh vật phẩm
     </h2>
     
@@ -305,14 +315,14 @@ export default function PostItem() {
         {/* === PHẦN 3: VỊ TRÍ & MÔ TẢ === 11] */}
         <section className="bg-gray-50 p-6 rounded-xl border border-gray-200">
            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-             <span className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">3</span>
+             <span className="bg-gray-500 text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">3</span>
              Vị trí & Hình ảnh
           </h2>
 
           <div className="mb-4">
              <label className="block text-sm font-semibold text-gray-700 mb-1">Mô tả thêm</label>
              <textarea 
-               className="w-full p-3 border rounded-lg h-24 focus:ring-2 focus:ring-primary outline-none"
+               className="w-full p-3 border rounded-lg h-24 focus:ring-2 focus:ring-gray-500 outline-none"
                placeholder="Mô tả thêm về hoàn cảnh mất/nhặt được, đặc điểm khác..."
                value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
              ></textarea>
@@ -334,10 +344,21 @@ export default function PostItem() {
           {position && <p className="mt-2 text-sm text-green-600 font-medium text-center">✅ Đã chọn tọa độ: {position.lat.toFixed(5)}, {position.lng.toFixed(5)}</p>}
         </section>
 
-        <button type="submit" className="w-full py-4 bg-primary text-white text-lg font-bold rounded-xl shadow-lg hover:bg-red-600 transition transform hover:scale-[1.01]">
+        <button type="submit" className="w-full py-4 bg-gray-500 text-white text-lg font-bold rounded-xl shadow-lg hover:bg-red-600 transition transform hover:scale-[1.01]">
           ĐĂNG TIN NGAY 🚀
         </button>
       </form>
+
+      {/* Modal Trigger */}
+    {showMatchModal && (
+      <MatchModal 
+        matches={matchResults} 
+        onClose={() => {
+            setShowMatchModal(false);
+            navigate('/explore');
+        }} 
+      />
+    )}
     </div>
   );
 }

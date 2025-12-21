@@ -18,6 +18,8 @@ exports.register = async (req, res) => {
 };
 
 // Đăng nhập
+// backend/src/controllers/authController.js
+
 exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -32,7 +34,15 @@ exports.login = async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        res.status(200).json({ token, data: { email: user.rows[0].email, role: user.rows[0].role } });
+        // THÊM id VÀO ĐÂY
+        res.status(200).json({ 
+            token, 
+            data: { 
+                id: user.rows[0].id, // <--- Quan trọng
+                email: user.rows[0].email, 
+                role: user.rows[0].role 
+            } 
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
