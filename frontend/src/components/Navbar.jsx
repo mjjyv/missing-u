@@ -1,5 +1,8 @@
+// frontend/components/Navbar.jsx
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import NotificationMenu from './NotificationMenu'; // <--- Import mới
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -37,6 +40,10 @@ export default function Navbar() {
               >
                 Đăng bài
               </Link>
+
+              {/* --- THÊM NOTIFICATION MENU VÀO ĐÂY --- */}
+               <NotificationMenu />
+               
               <Link 
                 to="/profile" 
                 className="font-medium text-gray-700 hover:text-gray-900 transition"
