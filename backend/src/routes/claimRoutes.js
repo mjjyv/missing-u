@@ -13,4 +13,11 @@ router.get('/item/:itemId', protect, claimController.getClaimsByItem);
 // Owner duyệt yêu cầu
 router.put('/:claimId/status', protect, claimController.updateClaimStatus);
 
+
+// [MỚI] Lấy thông báo các yêu cầu đang chờ duyệt (Notification)
+router.get('/notifications/pending', protect, claimController.getPendingClaimsForOwner);
+
+// [MỚI] Lấy claim của tôi trên item này
+router.get('/my-claim/:itemId', protect, claimController.getMyClaimOnItem);
+
 module.exports = router;

@@ -102,3 +102,52 @@ exports.updateClaimStatus = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
+
+// ... (Các hàm cũ createClaim, getClaimsByItem, updateClaimStatus giữ nguyên)
+
+// [MỚI] 4. Lấy thông báo yêu cầu nhận đồ (Cho Owner)
+// Logic: Tìm tất cả các Claim đang PENDING thuộc về các Item do User này tạo ra
+exports.getPendingClaimsForOwner = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const query = `
+      SELECT c.id as claim_id, c.created_at, c.status,
+             i.id as item_id, i.title as item_title, i.images as item_images,
+             u.full_name as claimer_name
+      FROM claims c
+      JOIN items i ON c.item_id = i.id
+      JOIN users u ON c.claimer_id = u.id
+      WHERE i.user_id = $1 AND c.status = 'PENDING'
+      ORDER BY c.created_at DESC
+    `;
+    const result = await pool.query(query, [userId]);
+    res.json({ status: 'success', data: result.rows });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// [MỚI] 5. Lấy chi tiết Claim của tôi trên một Item cụ thể (Cho Claimer xem lại)
+exports.getMyClaimOnItem = async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const userId = req.user.id;
+
+    const query = `
+      SELECT * FROM claims 
+      WHERE item_id = $1 AND claimer_id = $2
+    `;
+    const result = await pool.query(query, [itemId, userId]);
+
+    if (result.rows.length === 0) {
+      return res.json({ status: 'success', data: null });
+    }
+
+    res.json({ status: 'success', data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
